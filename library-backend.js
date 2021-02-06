@@ -1,99 +1,97 @@
-const { ApolloServer, gql } = require('apollo-server')
+const { ApolloServer, UserInputError, gql } = require("apollo-server");
+const { v1: uuid } = require("uuid");
 
 let authors = [
   {
-    name: 'Robert Martin',
+    name: "Robert Martin",
     id: "afa51ab0-344d-11e9-a414-719c6709cf3e",
     born: 1952,
   },
   {
-    name: 'Martin Fowler',
+    name: "Martin Fowler",
     id: "afa5b6f0-344d-11e9-a414-719c6709cf3e",
-    born: 1963
+    born: 1963,
   },
   {
-    name: 'Fyodor Dostoevsky',
+    name: "Fyodor Dostoevsky",
     id: "afa5b6f1-344d-11e9-a414-719c6709cf3e",
-    born: 1821
+    born: 1821,
   },
-  { 
-    name: 'Joshua Kerievsky', // birthyear not known
+  {
+    name: "Joshua Kerievsky", // birthyear not known
     id: "afa5b6f2-344d-11e9-a414-719c6709cf3e",
   },
-  { 
-    name: 'Sandi Metz', // birthyear not known
+  {
+    name: "Sandi Metz", // birthyear not known
     id: "afa5b6f3-344d-11e9-a414-719c6709cf3e",
   },
-]
-
-
+];
 
 let books = [
   {
-    title: 'Clean Code',
+    title: "Clean Code",
     published: 2008,
-    author: 'Robert Martin',
+    author: "Robert Martin",
     id: "afa5b6f4-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring']
+    genres: ["refactoring"],
   },
   {
-    title: 'Agile software development',
+    title: "Agile software development",
     published: 2002,
-    author: 'Robert Martin',
+    author: "Robert Martin",
     id: "afa5b6f5-344d-11e9-a414-719c6709cf3e",
-    genres: ['agile', 'patterns', 'design']
+    genres: ["agile", "patterns", "design"],
   },
   {
-    title: 'Refactoring, edition 2',
+    title: "Refactoring, edition 2",
     published: 2018,
-    author: 'Martin Fowler',
+    author: "Martin Fowler",
     id: "afa5de00-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring']
+    genres: ["refactoring"],
   },
   {
-    title: 'Refactoring to patterns',
+    title: "Refactoring to patterns",
     published: 2008,
-    author: 'Joshua Kerievsky',
+    author: "Joshua Kerievsky",
     id: "afa5de01-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring', 'patterns']
-  },  
+    genres: ["refactoring", "patterns"],
+  },
   {
-    title: 'Practical Object-Oriented Design, An Agile Primer Using Ruby',
+    title: "Practical Object-Oriented Design, An Agile Primer Using Ruby",
     published: 2012,
-    author: 'Sandi Metz',
+    author: "Sandi Metz",
     id: "afa5de02-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring', 'design']
+    genres: ["refactoring", "design"],
   },
   {
-    title: 'Crime and punishment',
+    title: "Crime and punishment",
     published: 1866,
-    author: 'Fyodor Dostoevsky',
+    author: "Fyodor Dostoevsky",
     id: "afa5de03-344d-11e9-a414-719c6709cf3e",
-    genres: ['classic', 'crime']
+    genres: ["classic", "crime"],
   },
   {
-    title: 'The Demon ',
+    title: "The Demon ",
     published: 1872,
-    author: 'Fyodor Dostoevsky',
+    author: "Fyodor Dostoevsky",
     id: "afa5de04-344d-11e9-a414-719c6709cf3e",
-    genres: ['classic', 'revolution']
+    genres: ["classic", "revolution"],
   },
-]
+];
 
 const typeDefs = gql`
-
   type Book {
-    title: String!,
-    published: Int!,
-    author: String!,
-    id: ID!,
+    title: String!
+    published: Int!
+    author: String!
+    id: ID!
     genres: [String!]!
   }
 
   type Author {
-    name: String!,
-    id: ID!,
-    born: Int,
+    name: String!
+    id: ID!
+    born: Int
     bookCount: Int
   }
 
@@ -103,7 +101,18 @@ const typeDefs = gql`
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
   }
-`
+
+  type Mutation {
+    addBook(
+      title: String!
+      published: Int!
+      author: String!
+      genres: [String!]!
+    ): Book!
+
+    editAuthor(name: String!, setBornTo: Int): Author
+  }
+`;
 
 const resolvers = {
   Query: {
@@ -111,44 +120,64 @@ const resolvers = {
     authorCount: () => authors.length,
     // allBooks: (parent, args) => books,
     allBooks: (parent, args) => {
+      var res = books;
 
-      var res = books
-
-      if (args.genre!==undefined ) {
-        res = res.filter(
-          book => {
-            return book.genres.some(g => g===args.genre) 
-          }
-        )
-      }
-      
-      console.log ("after genre" + JSON.stringify(res))
-
-      if (args.author!==undefined) {
-        res = res.filter(
-          book => {
-            return book.author === args.author
-          }
-        )
+      if (args.genre !== undefined) {
+        res = res.filter((book) => {
+          return book.genres.some((g) => g === args.genre);
+        });
       }
 
-      console.log ("after author" + JSON.stringify(res))      
-      
-      return res
-
+      if (args.author !== undefined) {
+        res = res.filter((book) => {
+          return book.author === args.author;
+        });
+      }
+      return res;
     },
-    allAuthors: () => authors
+    allAuthors: () => authors,
   },
-   Author: {
-     bookCount: (parent) => {return books.filter(book => book.author === parent.name).length}
-   }
-}
+  Author: {
+    bookCount: (parent) => {
+      return books.filter((book) => book.author === parent.name).length;
+    },
+  },
+  Mutation: {
+    addBook: (root, args) => {
+      const book = { ...args, id: uuid() };
+
+      if (
+        !authors.find((author) => {
+          return author.name === book.author;
+        })
+      ) {
+        const newAuthor = { name: book.author, id: uuid() };
+        authors = [...authors, newAuthor];
+      }
+
+      books.concat(book);
+      books = [...books, book];
+      return book;
+    },
+    editAuthor: (root, args) => {
+      const auth = authors.find((author) => {
+        return author.name === args.name;
+      });
+
+      if (!auth) {
+        return null
+      }
+      auth.born = args.setBornTo;
+      return auth;
+    },
+  },
+};
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-})
+});
 
 server.listen().then(({ url }) => {
-  console.log(`Server ready at ${url}`)
-})
+  console.log(`Server ready at ${url}`);
+});
