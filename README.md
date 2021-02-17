@@ -1,7 +1,5 @@
 # fullstack-graphql
 
-# React router, custom hooks, styling app with CSS and webpack
-
 - [x] 8.1
 - [x] 8.2
 - [x] 8.3
@@ -11,11 +9,11 @@
 - [x] 8.7
 - [x] 8.8 / library-frontend
 - [x] 8.9 / library-frontend
-- [ ] 8.10
-- [ ] 8.11
-- [ ] 8.12
-- [ ] 8.13
-- [ ] 8.14
+- [x] 8.10
+- [x] 8.11
+- [x] 8.12
+- [x] 8.13
+- [x] 8.14
 - [ ] 8.15
 - [ ] 8.16
 - [ ] 8.17
