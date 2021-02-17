@@ -177,6 +177,17 @@ const resolvers = {
   },
   Mutation: {
     addBook: async (root, args) => {
+      if ((args.title.length < 3)) {
+        throw new UserInputError("Book Title should be more than 3 char long", {
+          invalidArgs: args.title,
+        });
+      }
+
+      if ((args.author.length < 1)) {
+        throw new UserInputError("Book Author should be more than 3 char long", {
+          invalidArgs: args.title,
+        });
+      }
       const book = { ...args, id: uuid() };
       var authId;
 
@@ -184,12 +195,12 @@ const resolvers = {
 
       if (!bookAuthor) {
         const newBookAuthor = new Author({
-          name: book.author
-        })
-        const mongoRes = await newBookAuthor.save()
-        authId = mongoRes._id
+          name: book.author,
+        });
+        const mongoRes = await newBookAuthor.save();
+        authId = mongoRes._id;
       } else {
-        authId = bookAuthor._id
+        authId = bookAuthor._id;
       }
       const newBook = new Book({
         title: book.title,
