@@ -2,11 +2,14 @@ require("dotenv").config();
 
 const { ApolloServer, UserInputError, gql } = require("apollo-server");
 const { v1: uuid } = require("uuid");
+const jwt = require("jsonwebtoken");
 
 const mongoose = require("mongoose");
 const Author = require("./models/Author");
 const Book = require("./models/Book");
+const User = require("./models/User");
 const url = process.env.MONGODB_URI;
+const JWT_SECRET = "JWT_SECRET";
 
 mongoose.connect(url, { useNewUrlParser: true });
 
@@ -165,7 +168,8 @@ const resolvers = {
 
       return booksFromDb;
     },
-    allAuthors: () => Author.find({}),
+    allAuthors: async () => await Author.find({}),
+    me: () => {},
   },
   Author: {
     bookCount: async (parent) => {
@@ -177,16 +181,19 @@ const resolvers = {
   },
   Mutation: {
     addBook: async (root, args) => {
-      if ((args.title.length < 3)) {
+      if (args.title.length < 3) {
         throw new UserInputError("Book Title should be more than 3 char long", {
           invalidArgs: args.title,
         });
       }
 
-      if ((args.author.length < 1)) {
-        throw new UserInputError("Book Author should be more than 3 char long", {
-          invalidArgs: args.title,
-        });
+      if (args.author.length < 1) {
+        throw new UserInputError(
+          "Book Author should be more than 3 char long",
+          {
+            invalidArgs: args.author,
+          }
+        );
       }
       const book = { ...args, id: uuid() };
       var authId;
@@ -227,8 +234,57 @@ const resolvers = {
 
       return auth;
     },
+    login: async (root, args) => {
+      const userName = args.username;
+      const password = args.password;
+      const user = await User.findOne({ username: args.username });
+      console.log(user);
+
+      if (!user) {
+        throw new UserInputError("Wrong username", {
+          invalidArgs: args.username,
+        });
+      }
+      if (user.password !== password) {
+        throw new UserInputError("Wrong password", {
+          invalidArgs: args.password,
+        });
+      }
+
+      if (user.password == password) {
+        return { value: jwt.sign(user.username, JWT_SECRET) };
+      }
+    },
+    createUser: async (root, args) => {
+      const userName = args.username;
+      const favoriteGenre = args.favoriteGenre;
+
+      if (userName.length < 2) {
+        throw new UserInputError("Username should be atleast 2 char long", {
+          invalidArgs: args.username,
+        });
+      }
+
+      // if (!password || password < 8) {
+      //   throw new UserInputError("Password should be atleast 8 char long", {
+      //     invalidArgs: args.password,
+      //   });
+      // }
+
+      const newUser = new User({ username: userName, favoriteGenre: favoriteGenre, password: "password" });
+
+
+      await newUser.save();
+
+      return newUser
+    },
   },
 };
+
+const users = [
+  { username: "tester", password: "testerPasssword" },
+  { username: "admin", password: "adminPasssword" },
+];
 
 const server = new ApolloServer({
   typeDefs,
