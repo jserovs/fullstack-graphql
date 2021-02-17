@@ -99,6 +99,16 @@ const typeDefs = gql`
     genres: [String!]!
   }
 
+  type User {
+    username: String!
+    favoriteGenre: String!
+    id: ID!
+  }
+
+  type Token {
+    value: String!
+  }
+
   type Author {
     name: String!
     id: ID!
@@ -111,6 +121,7 @@ const typeDefs = gql`
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
+    me: User
   }
 
   type Mutation {
@@ -122,6 +133,10 @@ const typeDefs = gql`
     ): Book!
 
     editAuthor(name: String!, setBornTo: Int): Author
+
+    createUser(username: String!, favoriteGenre: String!): User
+
+    login(username: String!, password: String!): Token
   }
 `;
 
@@ -163,18 +178,18 @@ const resolvers = {
   Mutation: {
     addBook: async (root, args) => {
       const book = { ...args, id: uuid() };
-      var authId
+      var authId;
 
       const bookAuthor = await Author.findOne({ name: book.author });
 
       if (!bookAuthor) {
         const newBookAuthor = new Author({
-          name: book.author
-        })
-        const mongoRes = await newBookAuthor.save()
-        authId = mongoRes._id
+          name: book.author,
+        });
+        const mongoRes = await newBookAuthor.save();
+        authId = mongoRes._id;
       } else {
-        authId = bookAuthor._id
+        authId = bookAuthor._id;
       }
       const newBook = new Book({
         title: book.title,
@@ -188,12 +203,11 @@ const resolvers = {
       return newBook;
     },
     editAuthor: async (root, args) => {
-
       const filter = { name: args.name };
       const update = { born: args.setBornTo };
 
       const auth = await Author.findOneAndUpdate(filter, update, {
-        new: true
+        new: true,
       });
 
       if (!auth) {
