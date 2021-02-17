@@ -178,31 +178,18 @@ const resolvers = {
   Mutation: {
     addBook: async (root, args) => {
       const book = { ...args, id: uuid() };
-<<<<<<< HEAD
       var authId;
-=======
-      var authId
->>>>>>> 733b7259be1bac3f36b563f069c4683d1edc4449
 
       const bookAuthor = await Author.findOne({ name: book.author });
 
       if (!bookAuthor) {
         const newBookAuthor = new Author({
-<<<<<<< HEAD
-          name: book.author,
-        });
-        const mongoRes = await newBookAuthor.save();
-        authId = mongoRes._id;
-      } else {
-        authId = bookAuthor._id;
-=======
           name: book.author
         })
         const mongoRes = await newBookAuthor.save()
         authId = mongoRes._id
       } else {
         authId = bookAuthor._id
->>>>>>> 733b7259be1bac3f36b563f069c4683d1edc4449
       }
       const newBook = new Book({
         title: book.title,
@@ -216,19 +203,11 @@ const resolvers = {
       return newBook;
     },
     editAuthor: async (root, args) => {
-<<<<<<< HEAD
-=======
-
->>>>>>> 733b7259be1bac3f36b563f069c4683d1edc4449
       const filter = { name: args.name };
       const update = { born: args.setBornTo };
 
       const auth = await Author.findOneAndUpdate(filter, update, {
-<<<<<<< HEAD
         new: true,
-=======
-        new: true
->>>>>>> 733b7259be1bac3f36b563f069c4683d1edc4449
       });
 
       if (!auth) {
