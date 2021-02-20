@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const { ApolloServer, UserInputError, gql } = require("apollo-server");
+const { ApolloServer, UserInputError, AuthenticationError, gql } = require("apollo-server");
 const { v1: uuid } = require("uuid");
 const jwt = require("jsonwebtoken");
 
@@ -169,7 +169,9 @@ const resolvers = {
       return booksFromDb;
     },
     allAuthors: async () => await Author.find({}),
-    me: () => {},
+    me: (root, args, context) => {
+      return context.currentUser
+    }
   },
   Author: {
     bookCount: async (parent) => {
@@ -180,7 +182,12 @@ const resolvers = {
     },
   },
   Mutation: {
-    addBook: async (root, args) => {
+    addBook: async (root, args, { currentUser }) => {
+
+      if (!currentUser) {
+        throw new AuthenticationError("not authenticated")
+      }
+
       if (args.title.length < 3) {
         throw new UserInputError("Book Title should be more than 3 char long", {
           invalidArgs: args.title,
@@ -220,7 +227,12 @@ const resolvers = {
 
       return newBook;
     },
-    editAuthor: async (root, args) => {
+    editAuthor: async (root, args, {currentUser}) => {
+
+      if (!currentUser) {
+        throw new AuthenticationError("not authenticated")
+      }
+
       const filter = { name: args.name };
       const update = { born: args.setBornTo };
 
@@ -289,6 +301,16 @@ const users = [
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: async ({ req }) => {
+    const auth = req ? req.headers.authorization : null
+    if (auth && auth.toLowerCase().startsWith('bearer ')) {
+      const userName = jwt.verify(
+        auth.substring(7), JWT_SECRET
+      )      
+      const currentUser = await User.findOne({ username: userName });      
+      return { currentUser }
+    }
+  }
 });
 
 server.listen().then(({ url }) => {
