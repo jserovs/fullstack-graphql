@@ -97,7 +97,7 @@ const typeDefs = gql`
   type Book {
     title: String!
     published: Int!
-    author: String!
+    author: Author!
     id: ID!
     genres: [String!]!
   }
@@ -155,7 +155,7 @@ const resolvers = {
     },
     allBooks: async (parent, args) => {
       if (args.genre !== undefined) {
-        return await Book.find({ genres: { $in: [args.genre] } });
+        return await Book.find({ genres: { $in: [args.genre] } }).populate('author', { name: 1, born: 1 });
       }
 
       // if (args.author !== undefined) {
@@ -164,7 +164,8 @@ const resolvers = {
       //   });
       // }
 
-      const booksFromDb = await Book.find({});
+      const booksFromDb = await Book.find({}).populate('author', { name: 1, born: 1 });
+      console.log (booksFromDb)
 
       return booksFromDb;
     },
