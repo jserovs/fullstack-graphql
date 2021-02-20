@@ -224,7 +224,7 @@ const resolvers = {
         genres: book.genres,
       });
 
-      const mongoRes = await newBook.save();
+      const mongoRes = await newBook.save().then(t => t.populate('author').execPopulate())
 
       return newBook;
     },
@@ -251,7 +251,6 @@ const resolvers = {
       const userName = args.username;
       const password = args.password;
       const user = await User.findOne({ username: args.username });
-      console.log(user);
 
       if (!user) {
         throw new UserInputError("Wrong username", {
