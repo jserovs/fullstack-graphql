@@ -165,7 +165,6 @@ const resolvers = {
       // }
 
       const booksFromDb = await Book.find({}).populate('author', { name: 1, born: 1 });
-      console.log (booksFromDb)
 
       return booksFromDb;
     },
