@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { LOGIN } from "../gql/queries";
 
-const LoginForm = ({ show, setUser }) => {
+const LoginForm = ({ show, setUser}) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -13,17 +13,16 @@ const LoginForm = ({ show, setUser }) => {
     var result;
 
     try {
-      result = await login({ variables: { username, password } });
+      result = await login({ variables: { username, password }});
     } catch (error) {
       setUsername("");
       setPassword("");
       alert("Wrong credentials");
     }
 
-    console.log(result);
-
     if (result) {
       setUser(result.data.login.value);
+      localStorage.setItem('user-token',result.data.login.value)
     }
   };
 

@@ -1,13 +1,36 @@
 import { gql } from "@apollo/client";
 
-export const ALL_BOOKS = gql`
+// export const ALL_BOOKS = gql`
+//   query {
+//     allBooks {
+//       title
+//       author {
+//         name
+//       }
+//       published
+//       genres
+//     }
+//   }
+// `;
+
+export const CURRENT_USER = gql`
   query {
-    allBooks {
+    me {
+      username
+      favoriteGenre
+    }
+  }
+`;
+
+export const BOOKS_QUERY = gql`
+  query allBooks($genre: String) {
+    allBooks(genre: $genre) {
       title
       author {
         name
       }
       published
+      genres
     }
   }
 `;
@@ -51,10 +74,9 @@ export const CHANGE_AUTHOR = gql`
 `;
 
 export const LOGIN = gql`
-mutation login($username: String!, $password: String!){
-  login(username: $username, 
-    password: $password) {
-    value
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      value
+    }
   }
-}
 `;
