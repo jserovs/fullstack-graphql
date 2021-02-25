@@ -1,30 +1,42 @@
-import React from "react";
-import { useQuery } from "@apollo/client";
+import React, { useEffect, useState } from "react";
+import { useQuery, useLazyQuery } from "@apollo/client";
 
 import { BOOKS_QUERY, CURRENT_USER } from "../gql/queries";
 
 const BooksRecomended = ({ show }) => {
-  const current_user = await useQuery(CURRENT_USER, { skip: !show });
+  const current_user = useQuery(CURRENT_USER, { skip: !show });
+
+  const [recomendedBooks, setRecomendedBooks] = useState([]);
 
   var genre;
 
   if (current_user.data) {
-    console.log ('no skip')
     genre = current_user.data.me.favoriteGenre;
   }
 
+  const [getRecomendedBooks, { loading, data }] = useLazyQuery(BOOKS_QUERY, {
+    variables: { genre },
+    fetchPolicy: "network-only",
+    onCompleted: (data) => {
+      setRecomendedBooks(data.allBooks);
+    },
+  });
 
-  const result = await useQuery(BOOKS_QUERY, { variables: { genre }, skip: !show });
+  useEffect(() => {
+    console.log("effect change");
+    if (!show || !genre) return;
+    getRecomendedBooks();
+
+  }, [show, genre]);
+
 
   if (!show) {
     return null;
   }
 
-  if (result.loading) {
+  if (loading) {
     return <div>loading...</div>;
   }
-
-  var books = result.data.allBooks;
 
   return (
     <div>
@@ -38,7 +50,7 @@ const BooksRecomended = ({ show }) => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {books.map((book) => (
+          {recomendedBooks.map((book) => (
             <tr key={book.title}>
               <td>{book.title}</td>
               <td>{book.author.name}</td>
