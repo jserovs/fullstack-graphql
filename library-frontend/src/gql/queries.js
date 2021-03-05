@@ -35,6 +35,19 @@ export const BOOKS_QUERY = gql`
   }
 `;
 
+export const BOOK_ADDED = gql`
+  subscription {
+    bookAdded {
+      title
+      author {
+        name
+      }
+      published
+      genres
+    }
+  }
+`;
+
 export const ALL_AUTHORS = gql`
   query {
     allAuthors {
@@ -59,7 +72,9 @@ export const ADD_BOOK = gql`
       genres: $genres
     ) {
       title
-      author { name }
+      author {
+        name
+      }
     }
   }
 `;

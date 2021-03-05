@@ -1,30 +1,35 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 
+import { ADD_BOOK, BOOKS_QUERY } from "../gql/queries";
 
-import { ADD_BOOK, BOOKS_QUERY } from "../gql/queries"
-
-const NewBook = (props) => {
+const NewBook = ({ show, updateCacheWith }) => {
   const [title, setTitle] = useState("");
   const [author, setAuhtor] = useState("");
   const [published, setPublished] = useState("");
   const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
 
-  const [addBook] = useMutation(ADD_BOOK, { refetchQueries: [ {query: BOOKS_QUERY} ]});
+  const [addBook] = useMutation(ADD_BOOK, {
+    // refetchQueries: [{ query: BOOKS_QUERY }],
+    update: (store, response) => {
+      updateCacheWith(response.data.addBook);
+    },
+  });
 
-  if (!props.show) {
+  if (!show) {
     return null;
   }
 
   const submit = async (event) => {
     event.preventDefault();
     try {
-      await addBook({ variables: { title, author, published: parseInt(published), genres } });  
+      await addBook({
+        variables: { title, author, published: parseInt(published), genres },
+      });
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-    
 
     setTitle("");
     setPublished("");

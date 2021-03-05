@@ -14,7 +14,7 @@ const BooksRecomended = ({ show }) => {
     genre = current_user.data.me.favoriteGenre;
   }
 
-  const [getRecomendedBooks, { loading, data }] = useLazyQuery(BOOKS_QUERY, {
+  const [getRecomendedBooks, { loading }] = useLazyQuery(BOOKS_QUERY, {
     variables: { genre },
     fetchPolicy: "network-only",
     onCompleted: (data) => {
@@ -23,7 +23,6 @@ const BooksRecomended = ({ show }) => {
   });
 
   useEffect(() => {
-    console.log("effect change");
     if (!show || !genre) return;
     getRecomendedBooks();
 
